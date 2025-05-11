@@ -6,8 +6,10 @@ AccelerationSensor::AccelerationSensor() : BaseSensor("accelerationSensorTask", 
 String surfaceClassificationUUID = "B944AF10F4954560968F2F0D18CAB521";
 // String accUUID = "B944AF10F4954560968F2F0D18CAB522";
 String anomalyUUID = "B944AF10F4954560968F2F0D18CAB523";
+String rawDataUUID = "B944AF10F4954560968F2F0D18CAB524";
 int surfaceClassificationCharacteristic = 0;
 int anomalyCharacteristic = 0;
+int rawDataCharacteristic = 0;
 
 Adafruit_MPU6050 mpu;
 
@@ -30,6 +32,9 @@ void AccelerationSensor::initSensor()
 
   surfaceClassificationCharacteristic = BLEModule::createCharacteristic(surfaceClassificationUUID.c_str());
   anomalyCharacteristic = BLEModule::createCharacteristic(anomalyUUID.c_str());
+  rawDataCharacteristic = BLEModule::createCharacteristic(
+      rawDataUUID.c_str(),
+      CharacteristicProperties(false, false, false, false, true, false, false));
 }
 
 float buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
@@ -59,6 +64,11 @@ bool AccelerationSensor::readSensorData()
 
   Serial.println(millis() - prevAccTime);
   prevAccTime = millis();
+
+  if (sendBLE)
+  {
+    BLEModule::writeBLE(rawDataCharacteristic, a.acceleration.z);
+  }
 
   // one second inverval
   if (EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE <= ix)
@@ -95,7 +105,6 @@ bool AccelerationSensor::readSensorData()
 
     if (sendBLE)
     {
-
       notifyBLE(probAsphalt, probCompact, probPaving, probSett, probStanding, anomaly);
     }
 

@@ -58,6 +58,18 @@ int BLEModule::createCharacteristic(const char *uuid)
     return SenseBoxBLE::addCharacteristic(uuid);
 }
 
+int BLEModule::createCharacteristic(
+    const char *uuid, const CharacteristicProperties &properties)
+{
+    return SenseBoxBLE::addCharacteristic(uuid, properties);
+}
+
+bool BLEModule::writeBLE(int characteristicId, uint8_t *value, int len)
+{
+    isConnectedVar = SenseBoxBLE::write(characteristicId, value, len);
+    return isConnectedVar;
+}
+
 bool BLEModule::writeBLE(int characteristicId, float value)
 {
     isConnectedVar = SenseBoxBLE::write(characteristicId, value);

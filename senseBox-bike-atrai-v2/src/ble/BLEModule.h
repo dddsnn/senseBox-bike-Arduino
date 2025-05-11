@@ -23,7 +23,10 @@ public:
 
     // Create a BLE characteristic
     static int createCharacteristic(const char *uuid);
+    static int createCharacteristic(
+        const char *uuid, const CharacteristicProperties &properties);
 
+    static bool writeBLE(int characteristicId, uint8_t *value, int len);
     static bool writeBLE(int characteristicId, float value);
     static bool writeBLE(int characteristicId, float value, float value2);
     static bool writeBLE(int characteristicId, float value, float value2, float value3);
