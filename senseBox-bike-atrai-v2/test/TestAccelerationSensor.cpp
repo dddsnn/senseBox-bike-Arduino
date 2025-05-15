@@ -59,7 +59,18 @@ void test_bufferTracksSize(void)
     TEST_ASSERT_EQUAL_size_t(13, buffer.size());
     buffer.append(110, 3.25);
     TEST_ASSERT_EQUAL_size_t(18, buffer.size());
-    ;
+}
+
+void test_bufferPredictsNextSize(void)
+{
+    AccelerationBuffer buffer;
+    TEST_ASSERT_EQUAL_size_t(8, buffer.nextSize());
+    buffer.append(100, 1.5);
+    TEST_ASSERT_EQUAL_size_t(13, buffer.nextSize());
+    buffer.append(101, 2.0);
+    TEST_ASSERT_EQUAL_size_t(18, buffer.nextSize());
+    buffer.append(110, 3.25);
+    TEST_ASSERT_EQUAL_size_t(23, buffer.nextSize());
 }
 
 void test_bufferResetsSizeWithPop(void)
@@ -70,7 +81,6 @@ void test_bufferResetsSizeWithPop(void)
     buffer.pop();
     TEST_ASSERT_EQUAL_size_t(0, buffer.size());
 }
-
 void test_bufferResetsContentWithPop(void)
 {
     AccelerationBuffer buffer;
@@ -103,6 +113,7 @@ int runUnityTests(void)
     RUN_TEST(test_bufferAppendAndPopUsesBigEndian);
     RUN_TEST(test_bufferAppendAndPopMultipleValues);
     RUN_TEST(test_bufferTracksSize);
+    RUN_TEST(test_bufferPredictsNextSize);
     RUN_TEST(test_bufferResetsSizeWithPop);
     RUN_TEST(test_bufferResetsContentWithPop);
     RUN_TEST(test_bufferLeavesOldBufferValidWhileAppendingToNewOne);

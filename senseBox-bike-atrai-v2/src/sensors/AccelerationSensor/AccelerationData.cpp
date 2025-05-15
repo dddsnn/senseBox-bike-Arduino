@@ -24,6 +24,11 @@ std::size_t AccelerationBuffer::size() const
     return activeBufferConst().size();
 }
 
+std::size_t AccelerationBuffer::nextSize() const
+{
+    return size() == 0 ? 8 : size() + 5;
+}
+
 std::uint8_t *AccelerationBuffer::pop()
 {
     auto rawBuffer = reinterpret_cast<std::uint8_t *>(activeBuffer().data());

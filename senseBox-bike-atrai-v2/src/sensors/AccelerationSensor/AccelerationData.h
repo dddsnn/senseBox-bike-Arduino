@@ -29,6 +29,10 @@ public:
    */
   std::size_t size() const;
   /**
+   * @return The size the buffer will have after the next append(), in bytes.
+   */
+  std::size_t nextSize() const;
+  /**
    * @brief Pop the active buffer.
    *
    * Returns the current buffer as a byte buffer. Resets the internal state and
