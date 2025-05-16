@@ -46,7 +46,7 @@ float probSett = 0.0;
 float probStanding = 0.0;
 float anomaly = 0.0;
 
-float prevAccTime = millis();
+unsigned long prevAccTime = millis();
 
 bool AccelerationSensor::readSensorData()
 {
@@ -62,12 +62,20 @@ bool AccelerationSensor::readSensorData()
   buffer[ix++] = g.gyro.y;
   buffer[ix++] = g.gyro.z;
 
-  Serial.println(millis() - prevAccTime);
-  prevAccTime = millis();
+  unsigned long now = millis();
+  Serial.println(now - prevAccTime);
+  prevAccTime = now;
 
-  if (sendBLE)
+  rawBuffer.append(now, a.acceleration.z);
+  std::size_t MAX_CHARACTERISTIC_SIZE = 20;
+  if (rawBuffer.nextSize() > MAX_CHARACTERISTIC_SIZE)
   {
-    BLEModule::writeBLE(rawDataCharacteristic, a.acceleration.z);
+    auto &buf = rawBuffer.pop();
+    if (sendBLE)
+    {
+      std::uint8_t *mutData = const_cast<std::uint8_t *>(buf.data());
+      BLEModule::writeBLE(rawDataCharacteristic, mutData, buf.size());
+    }
   }
 
   // one second inverval
