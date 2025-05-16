@@ -35,13 +35,12 @@ public:
   /**
    * @brief Pop the active buffer.
    *
-   * Returns the current buffer as a byte buffer. Resets the internal state and
-   * switches to a new buffer that can be used immediately.
+   * Returns the current buffer's bytes. Resets the internal state and switches
+   * to a new buffer that can be used immediately.
    *
-   * The returned byte buffer remains valid until the next call to pop. The size
-   * size of the returned byte buffer is indicated by an immediately preceding
-   * call to size() (i.e. without an append() call in between). Immediately
-   * after pop(), size() returns 0.
+   * The returned byte buffer is a std::vector, where data() is a pointer to the
+   * underlying std::uint8_t buffer, and size() returns the size of that buffer.
+   * The buffer remains valid until the next call to pop.
    *
    * The buffer contains tightly-packed pairs of timestamp and value. The first
    * of these is a uint32 in network byte order containing the timestamp
@@ -51,9 +50,9 @@ public:
    * the requirement that timestamps must not decrease and must be no more than
    * 255 apart).
    *
-   * @return A pointer to a byte buffer containing accumulated data.
+   * @return A std::vector containing bytes of accumulated data.
    */
-  std::uint8_t *pop();
+  std::vector<std::uint8_t> const &pop();
 
 private:
   std::vector<std::uint8_t> buffers[2];

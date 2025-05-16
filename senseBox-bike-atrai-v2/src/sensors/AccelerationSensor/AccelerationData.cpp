@@ -26,16 +26,16 @@ std::size_t AccelerationBuffer::size() const
 
 std::size_t AccelerationBuffer::nextSize() const
 {
-    return size() == 0 ? 8 : size() + 5;
+    return activeBufferConst().empty() ? 8 : activeBufferConst().size() + 5;
 }
 
-std::uint8_t *AccelerationBuffer::pop()
+std::vector<std::uint8_t> const &AccelerationBuffer::pop()
 {
-    auto rawBuffer = reinterpret_cast<std::uint8_t *>(activeBuffer().data());
+    auto &buf = activeBuffer();
     activeBufferIndex = (activeBufferIndex + 1) % 2;
     activeBuffer().clear();
     fullTimeWritten = false;
-    return rawBuffer;
+    return buf;
 }
 
 std::vector<std::uint8_t> &AccelerationBuffer::activeBuffer()

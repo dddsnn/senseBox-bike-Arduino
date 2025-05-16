@@ -6,7 +6,7 @@ void setUp(void) {}
 
 void tearDown(void) {}
 
-std::uint32_t extractUint32(std::uint8_t *buf)
+std::uint32_t extractUint32(std::uint8_t const *buf)
 {
     std::uint32_t result = 0;
     result |= (*buf << 24);
@@ -16,13 +16,18 @@ std::uint32_t extractUint32(std::uint8_t *buf)
     return result;
 }
 
+float extractFloat32(std::uint8_t const *buf)
+{
+    return *(reinterpret_cast<float const *>(buf));
+}
+
 void test_bufferAppendAndPopSingleValue(void)
 {
     AccelerationBuffer buffer;
     buffer.append(100, 1.5);
-    std::uint8_t *buf = buffer.pop();
-    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf));
-    TEST_ASSERT_EQUAL_FLOAT(1.5, *(reinterpret_cast<float *>(buf + 4)));
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
 }
 
 void test_bufferAppendAndPopUsesBigEndian(void)
@@ -30,8 +35,8 @@ void test_bufferAppendAndPopUsesBigEndian(void)
     AccelerationBuffer buffer;
     unsigned long millis = (1 << 5) + (1 << 12) + (1 << 18) + (1 << 28);
     buffer.append(millis, 1.5);
-    std::uint8_t *buf = buffer.pop();
-    TEST_ASSERT_EQUAL_UINT32(millis, extractUint32(buf));
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(millis, extractUint32(buf.data()));
 }
 
 void test_bufferAppendAndPopMultipleValues(void)
@@ -40,13 +45,13 @@ void test_bufferAppendAndPopMultipleValues(void)
     buffer.append(100, 1.5);
     buffer.append(101, 2.0);
     buffer.append(110, 3.25);
-    std::uint8_t *buf = buffer.pop();
-    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf));
-    TEST_ASSERT_EQUAL_FLOAT(1.5, *(reinterpret_cast<float *>(buf + 4)));
-    TEST_ASSERT_EQUAL_UINT8(1, *(buf + 8));
-    TEST_ASSERT_EQUAL_FLOAT(2.0, *(reinterpret_cast<float *>(buf + 9)));
-    TEST_ASSERT_EQUAL_UINT8(9, *(buf + 13));
-    TEST_ASSERT_EQUAL_FLOAT(3.25, *(reinterpret_cast<float *>(buf + 14)));
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
+    TEST_ASSERT_EQUAL_UINT8(1, *(buf.data() + 8));
+    TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(buf.data() + 9));
+    TEST_ASSERT_EQUAL_UINT8(9, *(buf.data() + 13));
+    TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 14));
 }
 
 void test_bufferTracksSize(void)
@@ -88,9 +93,9 @@ void test_bufferResetsContentWithPop(void)
     buffer.append(101, 2.0);
     buffer.pop();
     buffer.append(110, 3.25);
-    std::uint8_t *buf = buffer.pop();
-    TEST_ASSERT_EQUAL_UINT32(110, extractUint32(buf));
-    TEST_ASSERT_EQUAL_FLOAT(3.25, *(reinterpret_cast<float *>(buf + 4)));
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(110, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 4));
 }
 
 void test_bufferLeavesOldBufferValidWhileAppendingToNewOne(void)
@@ -98,12 +103,12 @@ void test_bufferLeavesOldBufferValidWhileAppendingToNewOne(void)
     AccelerationBuffer buffer;
     buffer.append(100, 1.5);
     buffer.append(101, 2.0);
-    std::uint8_t *oldBuf = buffer.pop();
+    auto &oldBuf = buffer.pop();
     buffer.append(110, 3.25);
-    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(oldBuf));
-    TEST_ASSERT_EQUAL_FLOAT(1.5, *(reinterpret_cast<float *>(oldBuf + 4)));
-    TEST_ASSERT_EQUAL_UINT8(1, *(oldBuf + 8));
-    TEST_ASSERT_EQUAL_FLOAT(2.0, *(reinterpret_cast<float *>(oldBuf + 9)));
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(oldBuf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(oldBuf.data() + 4));
+    TEST_ASSERT_EQUAL_UINT8(1, *(oldBuf.data() + 8));
+    TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(oldBuf.data() + 9));
 }
 
 int runUnityTests(void)
