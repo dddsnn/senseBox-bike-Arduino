@@ -13,6 +13,7 @@ BLEModule::BLEModule()
 bool BLEModule::begin()
 {
     SenseBoxBLE::start("senseBox-BLE");
+    // SenseBoxBLE::enableMtuSizeNegotiation();
     delay(500);
     bleName = "senseBox:bike [" + SenseBoxBLE::getMCUId() + "]";
     SenseBoxBLE::setName(bleName);
@@ -64,10 +65,16 @@ int BLEModule::createCharacteristic(
     return SenseBoxBLE::addCharacteristic(uuid, properties);
 }
 
-bool BLEModule::writeBLE(int characteristicId, uint8_t *value, int len)
+bool BLEModule::writeBLE(
+    int characteristicId, uint8_t const *data, std::size_t len)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, len);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, data, len);
+}
+
+String BLEModule::writeBLEReturningError(
+    int characteristicId, uint8_t const *data, std::size_t len)
+{
+    return SenseBoxBLE::writeReturningError(characteristicId, data, len);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value)

@@ -4,6 +4,8 @@
 #include "../BaseSensor.h"
 #include "AccelerationData.h"
 #include <Adafruit_MPU6050.h>
+// TODO hide this behind BLEModule?+++++++
+#include <SenseBoxBLE.h>
 
 class AccelerationSensor : public BaseSensor
 {

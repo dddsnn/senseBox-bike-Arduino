@@ -48,6 +48,9 @@ float anomaly = 0.0;
 
 unsigned long prevAccTime = millis();
 
+// TODO put this somewhere+++++++++
+// TODO before sending: try to set characteristic, if fail, reduce size until it works+++++++
+// unsigned int maxCharacteristicSize = 244;
 bool AccelerationSensor::readSensorData()
 {
   bool classified = false;
@@ -66,15 +69,32 @@ bool AccelerationSensor::readSensorData()
   Serial.println(now - prevAccTime);
   prevAccTime = now;
 
+  // REFACTOR the whole thing+++++++++++
   rawBuffer.append(now, a.acceleration.z);
-  std::size_t MAX_CHARACTERISTIC_SIZE = 20;
-  if (rawBuffer.nextSize() > MAX_CHARACTERISTIC_SIZE)
+  // TODO negotiate higher max size, store it somewhere+++++++++++
+  // std::size_t MAX_CHARACTERISTIC_SIZE = 20;
+  // if (rawBuffer.nextSize() > MAX_CHARACTERISTIC_SIZE)
+  if (rawBuffer.nextSize() > SenseBoxBLE::properties().characteristicMaxLength)
   {
     auto &buf = rawBuffer.pop();
     if (sendBLE)
     {
+      // TODO make the ble modules take const stuff so we don't have to cast here+++++++++++
       std::uint8_t *mutData = const_cast<std::uint8_t *>(buf.data());
-      BLEModule::writeBLE(rawDataCharacteristic, mutData, buf.size());
+      // TODO check err?++++++++
+      for (int size = buf.size();; size--)
+      {
+        String err = BLEModule::writeBLEReturningError(rawDataCharacteristic, buf.data(), size);
+        // String err = BLEModule::writeBLE(rawDataCharacteristic, mutData, buf.size());
+        if (err == "")
+        {
+          break;
+        }
+        // maxCharacteristicSize = size - 1;
+        break;
+        // std::uint8_t s = maxCharacteristicSize;
+        // BLEModule::writeBLE(rawDataCharacteristic, &s, 1);
+      }
     }
   }
 

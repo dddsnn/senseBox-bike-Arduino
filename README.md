@@ -15,3 +15,9 @@ A mobile measurement station that measures temperature, relative humidity, parti
 ### License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+
+## Flashing firmware
+
+- hold the boot switch
+- press the reset button
+- release both
