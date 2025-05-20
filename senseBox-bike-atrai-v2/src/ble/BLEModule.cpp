@@ -58,7 +58,8 @@ int BLEModule::createCharacteristic(
     return SenseBoxBLE::addCharacteristic(uuid, properties);
 }
 
-bool BLEModule::writeBLE(int characteristicId, uint8_t *value, int len)
+bool BLEModule::writeBLE(
+    int characteristicId, uint8_t const *data, std::size_t len)
 {
     return SenseBoxBLE::write(characteristicId, data, len);
 }

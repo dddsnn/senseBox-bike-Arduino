@@ -1,6 +1,8 @@
 #ifndef BLE_MODULE_H
 #define BLE_MODULE_H
 
+#include <cstddef>
+
 #include <Arduino.h>
 #include <SenseBoxBLE.h>
 
@@ -26,7 +28,8 @@ public:
     static int createCharacteristic(
         const char *uuid, const CharacteristicProperties &properties);
 
-    static bool writeBLE(int characteristicId, uint8_t *value, int len);
+    static bool writeBLE(
+        int characteristicId, uint8_t const *data, std::size_t len);
     static bool writeBLE(int characteristicId, float value);
     static bool writeBLE(int characteristicId, float value, float value2);
     static bool writeBLE(int characteristicId, float value, float value2, float value3);
