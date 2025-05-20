@@ -1,7 +1,5 @@
 #include "BLEModule.h"
 
-bool isConnectedVar = false;
-
 // void (*BLEModule::receiveCallback)(BLEDevice, BLECharacteristic) = nullptr;
 
 BLEModule::BLEModule()
@@ -30,10 +28,6 @@ String BLEModule::getBLEName()
     return bleName;
 }
 
-bool BLEModule::isConnected()
-{
-    return isConnectedVar;
-}
 
 const char **BLEModule::getBLEConnectionString()
 {
@@ -66,38 +60,32 @@ int BLEModule::createCharacteristic(
 
 bool BLEModule::writeBLE(int characteristicId, uint8_t *value, int len)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, len);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, data, len);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, value);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value, float value2)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, value2);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, value, value2);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value, float value2, float value3)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, value2, value3);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, value, value2, value3);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value, float value2, float value3, float value4)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, value2, value3, value4);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, value, value2, value3, value4);
 }
 
 bool BLEModule::writeBLE(int characteristicId, float value, float value2, float value3, float value4, float value5)
 {
-    isConnectedVar = SenseBoxBLE::write(characteristicId, value, value2, value3, value4, value5);
-    return isConnectedVar;
+    return SenseBoxBLE::write(characteristicId, value, value2, value3, value4, value5);
 }
 
 // void BLEModule::setReceiveCallback(void (*callback)(BLEDevice, BLECharacteristic)) {
