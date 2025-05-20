@@ -11,6 +11,7 @@ BLEModule::BLEModule()
 bool BLEModule::begin()
 {
     SenseBoxBLE::start("senseBox-BLE");
+    SenseBoxBLE::enableMtuSizeNegotiation();
     delay(500);
     bleName = "senseBox:bike [" + SenseBoxBLE::getMCUId() + "]";
     SenseBoxBLE::setName(bleName);
