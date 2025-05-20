@@ -67,14 +67,12 @@ bool AccelerationSensor::readSensorData()
   prevAccTime = now;
 
   rawBuffer.append(now, a.acceleration.z);
-  std::size_t MAX_CHARACTERISTIC_SIZE = 20;
-  if (rawBuffer.nextSize() > MAX_CHARACTERISTIC_SIZE)
+  if (rawBuffer.nextSize() > BLEModule::characteristicMaxLength())
   {
     auto &buf = rawBuffer.pop();
     if (sendBLE)
     {
-      std::uint8_t *mutData = const_cast<std::uint8_t *>(buf.data());
-      BLEModule::writeBLE(rawDataCharacteristic, mutData, buf.size());
+      BLEModule::writeBLE(rawDataCharacteristic, buf.data(), buf.size());
     }
   }
 

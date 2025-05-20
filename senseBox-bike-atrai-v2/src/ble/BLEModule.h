@@ -16,6 +16,7 @@ public:
 
     // Get the BLE module ID
     String getBLEName();
+    static unsigned int characteristicMaxLength();
 
     void blePoll();
 

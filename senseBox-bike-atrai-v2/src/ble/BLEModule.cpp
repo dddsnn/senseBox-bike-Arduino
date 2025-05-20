@@ -28,6 +28,10 @@ String BLEModule::getBLEName()
     return bleName;
 }
 
+unsigned int BLEModule::characteristicMaxLength()
+{
+    return SenseBoxBLE::properties().characteristicMaxLength;
+}
 
 const char **BLEModule::getBLEConnectionString()
 {
