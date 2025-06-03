@@ -1,19 +1,28 @@
 #include "AccelerationData.h"
 
-AccelerationBuffer::AccelerationBuffer()
-    : activeBufferIndex(0), fullTimeWritten(false), lastTime(0) {}
+AccelerationBuffer::AccelerationBuffer() : activeBufferIndex(0), lastTime(0) {}
 
 void AccelerationBuffer::append(unsigned long millis, float z)
 {
     auto &buf = activeBuffer();
-    if (!fullTimeWritten)
+    auto timeDiff = millis - lastTime;
+    if (buf.empty())
     {
+        // First value, write full timestamp.
         pushUint32(buf, millis);
-        fullTimeWritten = true;
+    }
+    else if (timeDiff > 0 && timeDiff < 256)
+    {
+        // Difference to previous timestamp is 0 < diff < 256, write only the
+        // difference in one byte.
+        buf.push_back(millis - lastTime);
     }
     else
     {
-        buf.push_back(millis - lastTime);
+        // Exceptional case: write a single zero byte to mark that the following
+        // 4 bytes are a full timestamp again.
+        buf.push_back(0);
+        pushUint32(buf, millis);
     }
     lastTime = millis;
     pushFloat(buf, z);
@@ -24,9 +33,9 @@ std::size_t AccelerationBuffer::size() const
     return activeBufferConst().size();
 }
 
-std::size_t AccelerationBuffer::nextSize() const
+std::size_t AccelerationBuffer::maxNextSize() const
 {
-    return activeBufferConst().empty() ? 8 : activeBufferConst().size() + 5;
+    return activeBufferConst().empty() ? 8 : activeBufferConst().size() + 9;
 }
 
 std::vector<std::uint8_t> const &AccelerationBuffer::pop()
@@ -34,7 +43,6 @@ std::vector<std::uint8_t> const &AccelerationBuffer::pop()
     auto &buf = activeBuffer();
     activeBufferIndex = (activeBufferIndex + 1) % 2;
     activeBuffer().clear();
-    fullTimeWritten = false;
     return buf;
 }
 

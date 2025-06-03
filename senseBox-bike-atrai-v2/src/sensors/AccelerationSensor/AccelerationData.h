@@ -19,8 +19,7 @@ public:
   /**
    * @brief Append to the buffer.
    *
-   * @param millis A millisecond timestamp. Timestamps in subsequent calls must
-   *     not decrease, and must not be more than 255 apart.
+   * @param millis A millisecond timestamp.
    * @param z A value.
    */
   void append(unsigned long millis, float z);
@@ -29,9 +28,13 @@ public:
    */
   std::size_t size() const;
   /**
-   * @return The size the buffer will have after the next append(), in bytes.
+   * @brief Predict the maximum possible next size.
+   *
+   * The actual size of the buffer may be less, but not more than this value.
+   *
+   * @return The maximum size of the buffer after the next append(), in bytes.
    */
-  std::size_t nextSize() const;
+  std::size_t maxNextSize() const;
   /**
    * @brief Pop the active buffer.
    *
@@ -44,11 +47,16 @@ public:
    *
    * The buffer contains tightly-packed pairs of timestamp and value. The first
    * of these is a uint32 in network byte order containing the timestamp
-   * followed by a 4 byte float containing the value. In every following one,
-   * the timestamp is encoded as a single uint8 containing the difference to the
-   * previous timestamp, i.e. a total of 5 bytes including the value (hence also
-   * the requirement that timestamps must not decrease and must be no more than
-   * 255 apart).
+   * followed by a 4 byte float containing the value.
+   *
+   * In every following one, the usual case is that the timestamp is at least
+   * one but at most 255 greater than the preceding one. In this case, the
+   * timestamp is encoded as a single uint8 containing the difference to the
+   * previous timestamp, followed by the value (i.e. a total of 5 bytes).
+   * Otherwise (the timestamp is less than or equal to the preceding one, or at
+   * least 256 greater than it), the timestamp is encoded as a uint8 containing
+   * 0, followed by a uint32 containing the full timestamp, followed by the
+   * value (i.e. a total of 9 bytes).
    *
    * @return A std::vector containing bytes of accumulated data.
    */
@@ -57,7 +65,6 @@ public:
 private:
   std::vector<std::uint8_t> buffers[2];
   uint_fast8_t activeBufferIndex;
-  bool fullTimeWritten;
   unsigned long lastTime;
   std::vector<std::uint8_t> &activeBuffer();
   std::vector<std::uint8_t> const &activeBufferConst() const;

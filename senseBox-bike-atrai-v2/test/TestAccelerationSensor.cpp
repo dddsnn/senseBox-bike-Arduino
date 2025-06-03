@@ -39,19 +39,67 @@ void test_bufferAppendAndPopUsesBigEndian(void)
     TEST_ASSERT_EQUAL_UINT32(millis, extractUint32(buf.data()));
 }
 
-void test_bufferAppendAndPopMultipleValues(void)
+void test_bufferAppendAndPopMultipleValuesUsesShortFormatWithSmallDiffs(void)
 {
     AccelerationBuffer buffer;
     buffer.append(100, 1.5);
     buffer.append(101, 2.0);
-    buffer.append(110, 3.25);
+    buffer.append(356, 3.25);
     auto &buf = buffer.pop();
     TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
     TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
     TEST_ASSERT_EQUAL_UINT8(1, *(buf.data() + 8));
     TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(buf.data() + 9));
-    TEST_ASSERT_EQUAL_UINT8(9, *(buf.data() + 13));
+    TEST_ASSERT_EQUAL_UINT8(255, *(buf.data() + 13));
     TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 14));
+}
+
+void test_bufferAppendAndPopMultipleValuesUsesLongFormatWithLargerDiffs(void)
+{
+    AccelerationBuffer buffer;
+    buffer.append(100, 1.5);
+    buffer.append(356, 2.0);
+    buffer.append(360, 3.25);
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
+    TEST_ASSERT_EQUAL_UINT8(0, *(buf.data() + 8));
+    TEST_ASSERT_EQUAL_UINT32(356, extractUint32(buf.data() + 9));
+    TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(buf.data() + 13));
+    TEST_ASSERT_EQUAL_UINT8(4, *(buf.data() + 17));
+    TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 18));
+}
+
+void test_bufferAppendAndPopMultipleValuesUsesLongFormatWithZeroDiffs(void)
+{
+    AccelerationBuffer buffer;
+    buffer.append(100, 1.5);
+    buffer.append(100, 2.0);
+    buffer.append(112, 3.25);
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
+    TEST_ASSERT_EQUAL_UINT8(0, *(buf.data() + 8));
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data() + 9));
+    TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(buf.data() + 13));
+    TEST_ASSERT_EQUAL_UINT8(12, *(buf.data() + 17));
+    TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 18));
+}
+
+void test_bufferAppendAndPopMultipleValuesUsesLongFormatWithNegativeDiffs(void)
+{
+    AccelerationBuffer buffer;
+    buffer.append(100, 1.5);
+    buffer.append(99, 2.0);
+    buffer.append(112, 3.25);
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_UINT32(100, extractUint32(buf.data()));
+    TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
+    TEST_ASSERT_EQUAL_UINT8(0, *(buf.data() + 8));
+    TEST_ASSERT_EQUAL_UINT32(99, extractUint32(buf.data() + 9));
+    TEST_ASSERT_EQUAL_FLOAT(2.0, extractFloat32(buf.data() + 13));
+    TEST_ASSERT_EQUAL_UINT8(13, *(buf.data() + 17));
+    TEST_ASSERT_EQUAL_FLOAT(3.25, extractFloat32(buf.data() + 18));
 }
 
 void test_bufferTracksSize(void)
@@ -60,22 +108,22 @@ void test_bufferTracksSize(void)
     TEST_ASSERT_EQUAL_size_t(0, buffer.size());
     buffer.append(100, 1.5);
     TEST_ASSERT_EQUAL_size_t(8, buffer.size());
-    buffer.append(101, 2.0);
-    TEST_ASSERT_EQUAL_size_t(13, buffer.size());
-    buffer.append(110, 3.25);
-    TEST_ASSERT_EQUAL_size_t(18, buffer.size());
+    buffer.append(400, 2.0);
+    TEST_ASSERT_EQUAL_size_t(17, buffer.size());
+    buffer.append(410, 3.25);
+    TEST_ASSERT_EQUAL_size_t(22, buffer.size());
 }
 
 void test_bufferPredictsNextSize(void)
 {
     AccelerationBuffer buffer;
-    TEST_ASSERT_EQUAL_size_t(8, buffer.nextSize());
+    TEST_ASSERT_EQUAL_size_t(8, buffer.maxNextSize());
     buffer.append(100, 1.5);
-    TEST_ASSERT_EQUAL_size_t(13, buffer.nextSize());
-    buffer.append(101, 2.0);
-    TEST_ASSERT_EQUAL_size_t(18, buffer.nextSize());
-    buffer.append(110, 3.25);
-    TEST_ASSERT_EQUAL_size_t(23, buffer.nextSize());
+    TEST_ASSERT_EQUAL_size_t(17, buffer.maxNextSize());
+    buffer.append(400, 2.0);
+    TEST_ASSERT_EQUAL_size_t(26, buffer.maxNextSize());
+    buffer.append(410, 3.25);
+    TEST_ASSERT_EQUAL_size_t(31, buffer.maxNextSize());
 }
 
 void test_bufferResetsSizeWithPop(void)
@@ -116,7 +164,13 @@ int runUnityTests(void)
     UNITY_BEGIN();
     RUN_TEST(test_bufferAppendAndPopSingleValue);
     RUN_TEST(test_bufferAppendAndPopUsesBigEndian);
-    RUN_TEST(test_bufferAppendAndPopMultipleValues);
+    RUN_TEST(
+        test_bufferAppendAndPopMultipleValuesUsesShortFormatWithSmallDiffs);
+    RUN_TEST(
+        test_bufferAppendAndPopMultipleValuesUsesLongFormatWithLargerDiffs);
+    RUN_TEST(test_bufferAppendAndPopMultipleValuesUsesLongFormatWithZeroDiffs);
+    RUN_TEST(
+        test_bufferAppendAndPopMultipleValuesUsesLongFormatWithNegativeDiffs);
     RUN_TEST(test_bufferTracksSize);
     RUN_TEST(test_bufferPredictsNextSize);
     RUN_TEST(test_bufferResetsSizeWithPop);

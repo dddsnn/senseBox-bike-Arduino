@@ -67,7 +67,7 @@ bool AccelerationSensor::readSensorData()
   prevAccTime = now;
 
   rawBuffer.append(now, a.acceleration.z);
-  if (rawBuffer.nextSize() > BLEModule::characteristicMaxLength())
+  if (rawBuffer.maxNextSize() > BLEModule::characteristicMaxLength())
   {
     auto &buf = rawBuffer.pop();
     if (sendBLE)
