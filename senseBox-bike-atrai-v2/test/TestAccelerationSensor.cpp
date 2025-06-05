@@ -18,7 +18,8 @@ std::uint32_t extractUint32(std::uint8_t const *buf)
 
 float extractFloat32(std::uint8_t const *buf)
 {
-    return *(reinterpret_cast<float const *>(buf));
+    std::uint32_t u = extractUint32(buf);
+    return *(reinterpret_cast<float *>(&u));
 }
 
 void test_bufferAppendAndPopSingleValue(void)
@@ -30,13 +31,22 @@ void test_bufferAppendAndPopSingleValue(void)
     TEST_ASSERT_EQUAL_FLOAT(1.5, extractFloat32(buf.data() + 4));
 }
 
-void test_bufferAppendAndPopUsesBigEndian(void)
+void test_bufferAppendAndPopUsesBigEndianUint32s(void)
 {
     AccelerationBuffer buffer;
     unsigned long millis = (1 << 5) + (1 << 12) + (1 << 18) + (1 << 28);
     buffer.append(millis, 1.5);
     auto &buf = buffer.pop();
     TEST_ASSERT_EQUAL_UINT32(millis, extractUint32(buf.data()));
+}
+
+void test_bufferAppendAndPopUsesBigEndianFloat32s(void)
+{
+    AccelerationBuffer buffer;
+    float z = -7.750000476837158203125;
+    buffer.append(100, z);
+    auto &buf = buffer.pop();
+    TEST_ASSERT_EQUAL_FLOAT(z, extractFloat32(buf.data() + 4));
 }
 
 void test_bufferAppendAndPopMultipleValuesUsesShortFormatWithSmallDiffs(void)
@@ -163,7 +173,8 @@ int runUnityTests(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_bufferAppendAndPopSingleValue);
-    RUN_TEST(test_bufferAppendAndPopUsesBigEndian);
+    RUN_TEST(test_bufferAppendAndPopUsesBigEndianUint32s);
+    RUN_TEST(test_bufferAppendAndPopUsesBigEndianFloat32s);
     RUN_TEST(
         test_bufferAppendAndPopMultipleValuesUsesShortFormatWithSmallDiffs);
     RUN_TEST(

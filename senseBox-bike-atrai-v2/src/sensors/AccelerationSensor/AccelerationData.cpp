@@ -67,9 +67,6 @@ void AccelerationBuffer::pushUint32(
 
 void AccelerationBuffer::pushFloat(std::vector<std::uint8_t> &buf, float x)
 {
-    std::uint8_t *bytes = reinterpret_cast<std::uint8_t *>(&x);
-    buf.push_back(*bytes);
-    buf.push_back(*(bytes + 1));
-    buf.push_back(*(bytes + 2));
-    buf.push_back(*(bytes + 3));
+    std::uint32_t u = *(reinterpret_cast<std::uint32_t *>(&x));
+    pushUint32(buf, u);
 }
