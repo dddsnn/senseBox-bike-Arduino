@@ -8,16 +8,18 @@
 #include "ble/BLEModule.h"
 #include "led/LED.h"
 
-DustSensor dustSensor;
-TempHumiditySensor tempHumiditySensor;
-DistanceSensor distanceSensor;
+// TODO Hack: Disabled to test raw acceleration.
+// DustSensor dustSensor;
+// TempHumiditySensor tempHumiditySensor;
+// DistanceSensor distanceSensor;
 AccelerationSensor accelerationSensor;
 BatterySensor batterySensor;
 
 BaseSensor *sensors[] = {
-    &dustSensor,
-    &tempHumiditySensor,
-    &distanceSensor,
+    // TODO Hack: Disabled to test raw acceleration.
+    // &dustSensor,
+    // &tempHumiditySensor,
+    // &distanceSensor,
     &accelerationSensor,
     &batterySensor};
 
@@ -86,16 +88,18 @@ void setup()
 void loop()
 {
     // Read acceleration and distance sensor data as fast as possible
-    distanceSensor.readSensorData();
+    // TODO Hack: Disabled to test raw acceleration.
+    // distanceSensor.readSensorData();
     bool classified = accelerationSensor.readSensorData();
 
+    // TODO Hack: Disabled to test raw acceleration.
     // Read temperature and fine dust sensor data after a surface classification
-    if (classified)
-    {
-        dustSensor.readSensorData();
-        tempHumiditySensor.readSensorData();
-        display.showConnectionScreen();
-    }
+    // if (classified)
+    // {
+    //     dustSensor.readSensorData();
+    //     tempHumiditySensor.readSensorData();
+    //     display.showConnectionScreen();
+    // }
 
     // Perform BLE polling
     bleModule.blePoll();

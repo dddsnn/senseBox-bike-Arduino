@@ -30,14 +30,16 @@ void AccelerationSensor::initSensor()
     delay(100);
   };
 
-  surfaceClassificationCharacteristic = BLEModule::createCharacteristic(surfaceClassificationUUID.c_str());
-  anomalyCharacteristic = BLEModule::createCharacteristic(anomalyUUID.c_str());
+  // TODO Hack: Disabled to test raw acceleration.
+  // surfaceClassificationCharacteristic = BLEModule::createCharacteristic(surfaceClassificationUUID.c_str());
+  // anomalyCharacteristic = BLEModule::createCharacteristic(anomalyUUID.c_str());
   rawDataCharacteristic = BLEModule::createCharacteristic(
       rawDataUUID.c_str(),
       CharacteristicProperties(false, false, false, false, true, false, false));
 }
 
-float buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
+// TODO Hack: Disabled to test raw acceleration.
+// float buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
 size_t ix = 0;
 float probAsphalt = 0.0;
 float probCompact = 0.0;
@@ -55,15 +57,15 @@ bool AccelerationSensor::readSensorData()
 
   mpu.getEvent(&a, &g, &temp);
 
-  buffer[ix++] = a.acceleration.x;
-  buffer[ix++] = a.acceleration.y;
-  buffer[ix++] = a.acceleration.z;
-  buffer[ix++] = g.gyro.x;
-  buffer[ix++] = g.gyro.y;
-  buffer[ix++] = g.gyro.z;
+  // TODO Hack: Disabled to test raw acceleration.
+  // buffer[ix++] = a.acceleration.x;
+  // buffer[ix++] = a.acceleration.y;
+  // buffer[ix++] = a.acceleration.z;
+  // buffer[ix++] = g.gyro.x;
+  // buffer[ix++] = g.gyro.y;
+  // buffer[ix++] = g.gyro.z;
 
   unsigned long now = millis();
-  Serial.println(now - prevAccTime);
   prevAccTime = now;
 
   rawBuffer.append(now, a.acceleration.z);
@@ -76,53 +78,54 @@ bool AccelerationSensor::readSensorData()
     }
   }
 
+  // TODO Hack: Disabled to test raw acceleration.
   // one second inverval
-  if (EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE <= ix)
-  {
-    classified = true;
-    // Turn the raw buffer in a signal which we can the classify
-    signal_t signal;
-    int err = numpy::signal_from_buffer(buffer, EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE, &signal);
-    if (err != 0)
-    {
-      ei_printf("Failed to create signal from buffer (%d)\n", err);
-      buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
-      return classified;
-    }
+  // if (EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE <= ix)
+  // {
+  //   classified = true;
+  //   // Turn the raw buffer in a signal which we can the classify
+  //   signal_t signal;
+  //   int err = numpy::signal_from_buffer(buffer, EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE, &signal);
+  //   if (err != 0)
+  //   {
+  //     ei_printf("Failed to create signal from buffer (%d)\n", err);
+  //     buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
+  //     return classified;
+  //   }
 
-    // Run the classifier
-    ei_impulse_result_t result = {};
+  //   // Run the classifier
+  //   ei_impulse_result_t result = {};
 
-    err = run_classifier(&signal, &result, false);
-    if (err != EI_IMPULSE_OK)
-    {
-      ei_printf("ERR: Failed to run classifier (%d)\n", err);
-      buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
-      return classified;
-    }
+  //   err = run_classifier(&signal, &result, false);
+  //   if (err != EI_IMPULSE_OK)
+  //   {
+  //     ei_printf("ERR: Failed to run classifier (%d)\n", err);
+  //     buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
+  //     return classified;
+  //   }
 
-    probAsphalt = result.classification[0].value;
-    probCompact = result.classification[1].value;
-    probPaving = result.classification[2].value;
-    probSett = result.classification[3].value;
-    probStanding = result.classification[4].value;
+  //   probAsphalt = result.classification[0].value;
+  //   probCompact = result.classification[1].value;
+  //   probPaving = result.classification[2].value;
+  //   probSett = result.classification[3].value;
+  //   probStanding = result.classification[4].value;
 
-    anomaly = result.anomaly;
+  //   anomaly = result.anomaly;
 
-    if (sendBLE)
-    {
-      notifyBLE(probAsphalt, probCompact, probPaving, probSett, probStanding, anomaly);
-    }
+  //   if (sendBLE)
+  //   {
+  //     notifyBLE(probAsphalt, probCompact, probPaving, probSett, probStanding, anomaly);
+  //   }
 
-    ix = 0;
+  //   ix = 0;
 
-    buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
-  }
+  //   buffer[EI_CLASSIFIER_DSP_INPUT_FRAME_SIZE] = {};
+  // }
 
-  if (measurementCallback)
-  {
-    measurementCallback({probAsphalt, probCompact, probPaving, probSett, probStanding});
-  }
+  // if (measurementCallback)
+  // {
+  //   measurementCallback({probAsphalt, probCompact, probPaving, probSett, probStanding});
+  // }
 
   return classified;
 }
